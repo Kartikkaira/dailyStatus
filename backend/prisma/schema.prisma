@@ -1,0 +1,33 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model User {
+  id            String       @id @default(uuid())
+  email         String       @unique
+  passwordHash  String       @map("password_hash")
+  createdAt     DateTime     @default(now()) @map("created_at")
+  dayStatuses   DayStatus[]
+
+  @@map("users")
+}
+
+model DayStatus {
+  id          Int      @id @default(autoincrement())
+  month       Int
+  day         Int
+  statusText  String   @map("status_text")
+  statusColor String?  @map("status_color")
+  updatedBy   String   @map("updated_by")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  user        User     @relation(fields: [updatedBy], references: [id], onDelete: Cascade)
+
+  @@unique([month, day], name: "month_day")
+  @@map("day_status")
+}
